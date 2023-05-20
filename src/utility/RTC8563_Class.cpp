@@ -4,6 +4,7 @@
 #include "RTC8563_Class.hpp"
 
 #include <sys/time.h>
+#include <stdlib.h>
 
 namespace m5
 {
@@ -267,7 +268,16 @@ namespace m5
       t_st.tm_min  = dt.time.minutes;
       t_st.tm_sec  = dt.time.seconds;
       timeval now;
+      // mktime(3) uses localtime, force UTC
+      char *oldtz = getenv("TZ");
+      setenv("TZ", "", 1);
       now.tv_sec = mktime(&t_st);
+      if (oldtz)
+      {
+        setenv("TZ", oldtz, 1);
+      } else {
+        unsetenv("TZ");
+      }
       now.tv_usec = 0;
       settimeofday(&now, tz);
     }
